@@ -1252,18 +1252,17 @@ const countSummary = useMemo(() => {
         </div>
 
         {/* FOOTER */}
-        <footer className="text-center mt-3">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/2/20/Logo_PLN.svg"
-            style={{ height: 30 }}
-            alt="PLN"
-          />
-          <br />
-          <small>
-            &copy; 2025 Sistem PO Setting KWH - UP3 Tanjung Karang | Developed
-            by TEL
-          </small>
-        </footer>
+        <footer className="modern-footer">
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/2/20/Logo_PLN.svg"
+    alt="PLN"
+  />
+  <div className="footer-text">
+    © 2025 FO⚡MET — Sistem PO Setting KWH  
+    <br />UP3 Tanjung Karang
+  </div>
+</footer>
+
       </div>
 
       {/* Styling singkat */}
@@ -1422,6 +1421,43 @@ const countSummary = useMemo(() => {
   align-items: center;
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
   z-index: 9999;
+}
+/* =======================
+   MODERN FOOTER STYLE
+==========================*/
+.modern-footer {
+  text-align: center;
+  padding: 25px 10px;
+  margin-top: 20px;
+  color: #6c757d;
+  font-size: 13px;
+  line-height: 1.4;
+  border-top: 1px solid #e4e4e4;
+  background: #fafafa;
+}
+
+/* Logo PLN lebih clean */
+.modern-footer img {
+  height: 32px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+/* Teks */
+.footer-text {
+  font-weight: 500;
+}
+
+/* Agar footer tidak ketutup bottomNav */
+@media (max-width: 768px) {
+  .modern-footer {
+    padding-bottom: 85px; /* ruang untuk bottom nav */
+    font-size: 12px;
+  }
+
+  .modern-footer img {
+    height: 28px;
+  }
 }
 
 `}</style>
