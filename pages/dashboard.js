@@ -677,12 +677,6 @@ const countSummary = useMemo(() => {
 </div>
 
 
-        {/* INFO TOTAL */}
-        <div className="mt-4 mb-2">
-          <h5>Dashboard PO Setting</h5>
-          <div>Total Data: {allData.length}</div>
-        </div>
-
         {/* FORM INPUT MULTI-ROW */}
         <div className="form-area" id="form-area">
           <h5>
@@ -1520,3 +1514,4 @@ const countSummary = useMemo(() => {
     
   );
 }
+
