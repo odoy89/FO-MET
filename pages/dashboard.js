@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2";
+import styles from "../styles/dashboard.module.css";
 
 import { Bar, Line } from "react-chartjs-2";
 import {
@@ -683,7 +684,7 @@ const countSummary = useMemo(() => {
         </div>
 
         {/* FORM INPUT MULTI-ROW */}
-        <div className="form-area">
+        <div className="form-area" id="form-area">
           <h5>
             <i className="bi bi-pencil-square"></i> Input Data
           </h5>
@@ -915,7 +916,7 @@ const countSummary = useMemo(() => {
         </div>
 
         {/* FILTER GRAFIK PER UNIT */}
-        <div className="table-area">
+        <div className="table-area" id="table-area">
           <div className="card p-2 mb-3" style={{ maxWidth: 300 }}>
             <label className="form-label mb-1" style={{ fontSize: 13 }}>
               Filter Grafik per Unit:
@@ -939,7 +940,7 @@ const countSummary = useMemo(() => {
           </div>
 
           {/* CHARTS */}
-          <div className="row mb-3 chart-container">
+          <div className="row mb-3 chart-container" id="charts">
             {/* Chart 1 */}
             <div className="chart-card">
               <h6>PO per Unit (PBPD & HAR)</h6>
@@ -1267,150 +1268,186 @@ const countSummary = useMemo(() => {
 
       {/* Styling singkat */}
       <style jsx>{`
-  /* DESKTOP DEFAULT STYLE */
-  .header-wrapper {
-    background: white;
-    padding: 18px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+/* =========================================
+   DESKTOP LAYOUT
+========================================= */
 
-  .header-left {
-    display: flex;
+.header-wrapper {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.form-area,
+.table-area {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.chart-card {
+  background: white;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card :global(canvas) {
+  max-height: 180px;
+}
+
+/* =========================================
+   MOBILE RESPONSIVE PERFECT MODE
+========================================= */
+@media (max-width: 768px) {
+
+  /* ===== HEADER ===== */
+  .header-wrapper {
     flex-direction: column;
-    align-items: center;
     text-align: center;
-    margin-right: auto;
+    padding: 14px;
   }
 
   .header-left img {
-    height: 65px;
-    margin-bottom: 3px;
+    height: 55px !important;
   }
 
-  .header-center {
-    text-align: center;
-    flex: 1;
+  .header-right {
     margin-top: 10px;
   }
 
-  .form-area,
-  .table-area {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
+  /* ===== FORM ===== */
+  .form-area {
+    padding: 14px !important;
   }
 
+  /* Semua field form jadi 1 kolom */
+  .row.align-items-end.g-2.mb-2 > div {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* ===== CHART ===== */
   .chart-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
+    grid-template-columns: 1fr !important;
   }
 
   .chart-card {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    height: 260px;
-    display: flex;
-    flex-direction: column;
+    height: auto !important;
   }
 
-  .chart-card :global(canvas) {
-    flex: 1;
-    max-height: 200px;
+  /* ===== TABLE ===== */
+
+  .table-area {
+    padding: 10px !important;
+    overflow-x: auto;
   }
 
-  /* =======================================================
-     ==========   MOBILE RESPONSIVE MODE   ==================
-     ======================================================= */
-  @media (max-width: 768px) {
-
-    /* HEADER */
-    .header-wrapper {
-      flex-direction: column;
-      text-align: center;
-      padding: 14px;
-    }
-
-    .header-left img {
-      height: 50px !important;
-    }
-
-    .header-right {
-      margin-top: 10px;
-      text-align: center;
-      width: 100%;
-    }
-
-    .header-center {
-      margin-top: 5px;
-      margin-bottom: 5px;
-    }
-
-    /* Logo FO⚡MET kecil di HP */
-    .header-center div {
-      font-size: 26px !important;
-    }
-
-    /* FORM AREA */
-    .form-area {
-      padding: 14px !important;
-    }
-
-    .form-area .row div {
-      margin-bottom: 10px;
-    }
-
-    /* Single-column form on mobile */
-    .row.align-items-end.g-2.mb-2 > div {
-      flex: 0 0 100%;
-      max-width: 100%;
-    }
-
-    /* CHART STACK VERTICAL */
-    .chart-container {
-      grid-template-columns: 1fr !important;
-    }
-
-    .chart-card {
-      height: auto !important;
-    }
-
-    /* TABLE */
-    table {
-      font-size: 12px;
-    }
-
-    .table-area {
-      padding: 14px !important;
-    }
-
-    /* Scroll horizontal jika tabel lebar */
-    .table-area {
-      overflow-x: auto;
-    }
-
-    table {
-      min-width: 900px;
-    }
-
-    td, th {
-      white-space: nowrap;
-    }
+  .table-area table {
+    min-width: 950px;
+    font-size: 12px;
   }
-`}</style>
 
-    </div>
-  );
+  th, td {
+    white-space: nowrap;
+  }
+
 }
 
+/* =========================================
+   BOTTOM NAV
+========================================= */
+
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  height: 58px;
+  background: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 9999;
+}
+
+.bottomNav button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bottomNav button i {
+  font-size: 20px;
+  margin-bottom: 1px;
+}
+
+/* FAB BUTTON */
+.fabBtn {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 58px;
+  height: 58px;
+  font-size: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  z-index: 9999;
+}
+
+`}</style>
+
+
+ {/* ================= BOTTOM NAV ================= */}
+ <div className={styles.bottomNav}>
+      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+        <i className="bi bi-house"></i><span>Home</span>
+      </button>
+
+      <button onClick={() => document.getElementById("form-area")?.scrollIntoView({ behavior: "smooth" })}>
+        <i className="bi bi-pencil-square"></i><span>Input</span>
+      </button>
+
+      <button onClick={() => document.getElementById("table-area")?.scrollIntoView({ behavior: "smooth" })}>
+        <i className="bi bi-table"></i><span>Data</span>
+      </button>
+
+      <button onClick={() => document.getElementById("charts")?.scrollIntoView({ behavior: "smooth" })}>
+        <i className="bi bi-bar-chart"></i><span>Grafik</span>
+      </button>
+    </div>
+
+
+  </div>
+    
+  );
+}
