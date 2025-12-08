@@ -1253,15 +1253,20 @@ const countSummary = useMemo(() => {
 
         {/* FOOTER */}
         <footer className="modern-footer">
-  <img
-    src="https://upload.wikimedia.org/wikipedia/commons/2/20/Logo_PLN.svg"
-    alt="PLN"
-  />
+  <div className="footer-logo">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/2/20/Logo_PLN.svg"
+      alt="PLN"
+    />
+    
+  </div>
+
   <div className="footer-text">
-    © 2025 FO⚡MET — Sistem PO Setting KWH  
-    <br />UP3 Tanjung Karang
+     <strong>FO⚡MET</strong> — Form Setting Meter - <strong>UP3 TANJUNG KARANG </strong><br />
+        <span className="footer-sub">Powered By TEL © 2025</span>
   </div>
 </footer>
+
 
       </div>
 
@@ -1422,41 +1427,69 @@ const countSummary = useMemo(() => {
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
   z-index: 9999;
 }
-/* =======================
-   MODERN FOOTER STYLE
-==========================*/
+/* ==========================================
+   MODERN FOOTER – FULL VISIBLE & RESPONSIVE
+=========================================== */
+
 .modern-footer {
   text-align: center;
-  padding: 25px 10px;
-  margin-top: 20px;
+  padding: 35px 10px 95px; /* 95px = ruang untuk bottom nav */
   color: #6c757d;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.5;
   border-top: 1px solid #e4e4e4;
   background: #fafafa;
 }
 
-/* Logo PLN lebih clean */
-.modern-footer img {
-  height: 32px;
-  opacity: 0.9;
+/* Logo + PLN text */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   margin-bottom: 6px;
 }
 
-/* Teks */
+.footer-logo img {
+  height: 32px;
+}
+
+.footer-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d6efd;
+  letter-spacing: 2px;
+}
+
+/* Text bawah PLN */
 .footer-text {
   font-weight: 500;
 }
 
-/* Agar footer tidak ketutup bottomNav */
+/* UP3 TANJUNG KARANG */
+.footer-sub {
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
+}
+
+/* ===== MOBILE ADJUST ===== */
 @media (max-width: 768px) {
   .modern-footer {
-    padding-bottom: 85px; /* ruang untuk bottom nav */
+    padding-bottom: 110px; /* beri ruang lebih di HP */
     font-size: 12px;
   }
 
-  .modern-footer img {
+  .footer-logo img {
     height: 28px;
+  }
+
+  .footer-title {
+    font-size: 18px;
+  }
+
+  .footer-sub {
+    font-size: 12px;
   }
 }
 
