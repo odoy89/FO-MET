@@ -1267,85 +1267,150 @@ const countSummary = useMemo(() => {
 
       {/* Styling singkat */}
       <style jsx>{`
-        .header-wrapper {
-          background: white;
-          padding: 18px;
-          border-radius: 16px;
-          margin-bottom: 20px;
-          box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-        .header-left {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          margin-right: auto;
-        }
-        .header-left img {
-          height: 65px;
-          margin-bottom: 3px;
-        }
-        .header-center {
-          text-align: center;
-          flex: 1;
-          margin-top: 10px;
-        }
-        .header-center h3 {
-          font-weight: 700;
-          margin: 0;
-          color: #0d6efd;
-        }
-        .form-area,
-        .table-area {
-          background: white;
-          padding: 20px;
-          border-radius: 16px;
-          box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-          margin-bottom: 20px;
-        }
-        .form-area h5 {
-          font-weight: 700;
-          margin-bottom: 15px;
-          color: #0d6efd;
-        }
-        .chart-container {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-        .chart-card {
-          background: white;
-          padding: 15px;
-          border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-          height: 260px;
-          display: flex;
-          flex-direction: column;
-        }
-        .chart-card h6 {
-          font-weight: 600;
-          margin-bottom: 8px;
-          color: #0d6efd;
-        }
-        .chart-card :global(canvas) {
-          flex: 1;
-          max-height: 200px;
-        }
-        @media (max-width: 768px) {
-          .chart-container {
-            grid-template-columns: 1fr;
-          }
-          .header-wrapper {
-            flex-direction: column;
-            text-align: center;
-          }
-        }
-      `}</style>
+  /* DESKTOP DEFAULT STYLE */
+  .header-wrapper {
+    background: white;
+    padding: 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-right: auto;
+  }
+
+  .header-left img {
+    height: 65px;
+    margin-bottom: 3px;
+  }
+
+  .header-center {
+    text-align: center;
+    flex: 1;
+    margin-top: 10px;
+  }
+
+  .form-area,
+  .table-area {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+  }
+
+  .chart-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .chart-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    height: 260px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chart-card :global(canvas) {
+    flex: 1;
+    max-height: 200px;
+  }
+
+  /* =======================================================
+     ==========   MOBILE RESPONSIVE MODE   ==================
+     ======================================================= */
+  @media (max-width: 768px) {
+
+    /* HEADER */
+    .header-wrapper {
+      flex-direction: column;
+      text-align: center;
+      padding: 14px;
+    }
+
+    .header-left img {
+      height: 50px !important;
+    }
+
+    .header-right {
+      margin-top: 10px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .header-center {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+
+    /* Logo FO⚡MET kecil di HP */
+    .header-center div {
+      font-size: 26px !important;
+    }
+
+    /* FORM AREA */
+    .form-area {
+      padding: 14px !important;
+    }
+
+    .form-area .row div {
+      margin-bottom: 10px;
+    }
+
+    /* Single-column form on mobile */
+    .row.align-items-end.g-2.mb-2 > div {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+
+    /* CHART STACK VERTICAL */
+    .chart-container {
+      grid-template-columns: 1fr !important;
+    }
+
+    .chart-card {
+      height: auto !important;
+    }
+
+    /* TABLE */
+    table {
+      font-size: 12px;
+    }
+
+    .table-area {
+      padding: 14px !important;
+    }
+
+    /* Scroll horizontal jika tabel lebar */
+    .table-area {
+      overflow-x: auto;
+    }
+
+    table {
+      min-width: 900px;
+    }
+
+    td, th {
+      white-space: nowrap;
+    }
+  }
+`}</style>
+
     </div>
   );
 }
+
