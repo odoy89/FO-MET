@@ -536,6 +536,7 @@ const merkList = useMemo(() => {
         "Merk",
         "Type",
         "SN",
+        "Error (%)",
         "Peruntukan",
         "Status",
       ].join(";") + "\n";
@@ -553,6 +554,7 @@ const merkList = useMemo(() => {
         r[7] || "",
         r[8] || "",
         r[9] || "",
+        r[13] || "",
         r[11] || "",
         r[12] || "",
       ].map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`);
@@ -1537,5 +1539,6 @@ const merkList = useMemo(() => {
     
   );
 }
+
 
 
