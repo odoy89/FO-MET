@@ -853,7 +853,7 @@ const merkList = useMemo(() => {
                       </div>
                       
   <div className="col-md-1">
-    <label>Error (%)</label>
+    <label>Error Kwh (%)</label>
     <input
       type="number"
       className="form-control form-control-sm"
@@ -1537,3 +1537,4 @@ const merkList = useMemo(() => {
     
   );
 }
+
