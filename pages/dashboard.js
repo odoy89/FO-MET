@@ -107,6 +107,7 @@ export default function DashboardPage() {
       file: null,
       fileUrl: "",
       status: "Belum",
+      errorMeter: "",
       rowNumber: null,
     };
   }
@@ -311,6 +312,12 @@ const countSummary = useMemo(() => {
     return Array.from(set);
   }, [tarifData]);
 
+  // MERK unik (tanpa duplikat)
+const merkList = useMemo(() => {
+  return [...new Set(dataKWH.map((k) => k.merk))];
+}, [dataKWH]);
+
+
   function handleFormChange(idx, field, value) {
     setFormRows((prev) => {
       const clone = [...prev];
@@ -387,6 +394,7 @@ const countSummary = useMemo(() => {
           fileUrl,
           peruntukan: row.peruntukan || "",
           status: row.status || "Belum",
+          errorMeter: row.errorMeter || "",
           rowNumber: row.rowNumber || undefined,
         });
       }
@@ -435,7 +443,8 @@ const countSummary = useMemo(() => {
       fileUrl: row[10] || "",
       peruntukan: row[11] || "",
       status: row[12] || "Belum",
-      rowNumber: row[13] || null,
+      errorMeter: row[13] || "",
+      rowNumber: row[14] || null,
     };
     setFormRows([obj]);
     if (typeof window !== "undefined") {
@@ -676,7 +685,6 @@ const countSummary = useMemo(() => {
 
 </div>
 
-
         {/* FORM INPUT MULTI-ROW */}
         <div className="form-area" id="form-area">
           <h5>
@@ -798,37 +806,39 @@ const countSummary = useMemo(() => {
                       <div className="col-md-2">
                         <label>Merk</label>
                         <select
-                          className="form-select form-select-sm"
-                          value={row.merk}
-                          onChange={(e) =>
-                            handleFormChange(idx, "merk", e.target.value)
-                          }
-                        >
-                          <option value="">-- Pilih Merk --</option>
-                          {dataKWH.map((k, i) => (
-                            <option key={i} value={k.merk}>
-                              {k.merk}
-                            </option>
-                          ))}
-                        </select>
+  className="form-select form-select-sm"
+  value={row.merk}
+  onChange={(e) => {
+    handleFormChange(idx, "merk", e.target.value);
+    handleFormChange(idx, "type", ""); // reset TYPE
+  }}
+>
+  <option value="">-- Pilih Merk --</option>
+
+  {merkList.map((m, i) => (
+    <option key={i} value={m}>{m}</option>
+  ))}
+</select>
+
+
                       </div>
 
                       <div className="col-md-2">
                         <label>Type</label>
                         <select
-                          className="form-select form-select-sm"
-                          value={row.type}
-                          onChange={(e) =>
-                            handleFormChange(idx, "type", e.target.value)
-                          }
-                        >
-                          <option value="">-- Pilih Type --</option>
-                          {dataKWH.map((k, i) => (
-                            <option key={i} value={k.type}>
-                              {k.type}
-                            </option>
-                          ))}
-                        </select>
+  className="form-select form-select-sm"
+  value={row.type}
+  onChange={(e) => handleFormChange(idx, "type", e.target.value)}
+>
+  <option value="">-- Pilih Type --</option>
+
+  {dataKWH
+    .filter((k) => k.merk === row.merk)
+    .map((k, i) => (
+      <option key={i} value={k.type}>{k.type}</option>
+    ))}
+</select>
+
                       </div>
 
                       <div className="col-md-2">
@@ -841,6 +851,17 @@ const countSummary = useMemo(() => {
                           }
                         />
                       </div>
+                      
+  <div className="col-md-1">
+    <label>Error (%)</label>
+    <input
+      type="number"
+      className="form-control form-control-sm"
+      value={row.errorMeter}
+      onChange={(e) => handleFormChange(idx, "errorMeter", e.target.value)}
+      placeholder="%"
+    />
+  </div>
                     </>
                   )}
 
@@ -1153,6 +1174,7 @@ const countSummary = useMemo(() => {
                   <th>Merk</th>
                   <th>Type</th>
                   <th>SN</th>
+                  <th>Error (%)</th>
                   <th>Peruntukan</th>
                   <th>File PK</th>
                   <th>Status</th>
@@ -1197,6 +1219,7 @@ const countSummary = useMemo(() => {
                         <td>{r[7] || "-"}</td>
                         <td>{r[8] || "-"}</td>
                         <td>{r[9] || "-"}</td>
+                        <td>{r[13] || "-"}</td>
                         <td>{r[11]}</td>
                         <td>
                           {fileUrl ? (
@@ -1514,4 +1537,3 @@ const countSummary = useMemo(() => {
     
   );
 }
-
