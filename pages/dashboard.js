@@ -377,7 +377,10 @@ const merkList = useMemo(() => {
             filename: row.file.name,
           });
           // asumsi apiPost untuk uploadFile mengembalikan URL langsung
-          fileUrl = upRes;
+          fileUrl = typeof upRes === "string"
+  ? upRes
+  : (upRes?.data || upRes?.url || "");
+
         }
 
         payloadArray.push({
@@ -524,22 +527,24 @@ const merkList = useMemo(() => {
     }
 
     let csv =
-      [
-        "No",
-        "Tanggal",
-        "Unit",
-        "Pemohon",
-        "IDPEL",
-        "Nama",
-        "Tarif",
-        "Daya",
-        "Merk",
-        "Type",
-        "SN",
-        "Error (%)",
-        "Peruntukan",
-        "Status",
-      ].join(";") + "\n";
+    [
+      "No",
+      "Tanggal",
+      "Unit",
+      "Pemohon",
+      "IDPEL",
+      "Nama",
+      "Tarif",
+      "Daya",
+      "Merk",
+      "Type",
+      "SN",
+      "Error (%)",
+      "Peruntukan",
+      "File PK",   
+      "Status",
+    ].join(";") + "\n";
+    
 
     filteredTableData.forEach((r, idx) => {
       const rowArr = [
@@ -556,6 +561,7 @@ const merkList = useMemo(() => {
         r[9] || "",
         r[13] || "",
         r[11] || "",
+        r[10] || "",
         r[12] || "",
       ].map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`);
       csv += rowArr.join(";") + "\n";
@@ -1176,7 +1182,7 @@ const merkList = useMemo(() => {
                   <th>Merk</th>
                   <th>Type</th>
                   <th>SN</th>
-                  <th>Error KwH (%)</th>
+                  <th>Error (%)</th>
                   <th>Peruntukan</th>
                   <th>File PK</th>
                   <th>Status</th>
@@ -1200,7 +1206,7 @@ const merkList = useMemo(() => {
                   filteredTableData.map((r, idx) => {
                     const fileUrl = r[10];
                     const status = String(r[12] || "").trim();
-                    const rowNumber = r[13];
+                    const rowNumber = r[14];
                     const badge =
                       status === "Sudah" ? (
                         <span className="badge bg-success">Sudah</span>
@@ -1218,21 +1224,17 @@ const merkList = useMemo(() => {
                         <td>{r[4]}</td>
                         <td>{r[5]}</td>
                         <td>{r[6]}</td>
-                        <td>{r[7] || "-"}</td>
-                        <td>{r[8] || "-"}</td>
-                        <td>{r[9] || "-"}</td>
-                        <td>{r[13] || "-"}</td>
-                        <td>{r[11]}</td>
+                        <td>{r[7] || "-"}</td>      {/* Merk */}
+                        <td>{r[8] || "-"}</td>      {/* Type */}
+                        <td>{r[9] || "-"}</td>      {/* SN */}
+                        <td>{r[13] || "-"}</td>     {/* Error (%) */}
+                        <td>{r[11] || "-"}</td>     {/* Peruntukan */}
                         <td>
-                          {fileUrl ? (
-                            <a href={fileUrl} target="_blank" rel="noreferrer">
-                              Lihat
-                            </a>
-                          ) : (
-                            "-"
-                          )}
+                          {r[10] ? (
+                                     <a href={r[10]} target="_blank" rel="noreferrer">Lihat</a>
+                                 ) : "-"}
                         </td>
-                        <td>{badge}</td>
+                      <td>{badge}</td>            {/* Status */}
                         <td>
                           {roleLogin === "ADMINISTRATOR" ? (
                             <div className="d-flex flex-column gap-1">
@@ -1539,6 +1541,3 @@ const merkList = useMemo(() => {
     
   );
 }
-
-
-
