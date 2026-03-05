@@ -1,4 +1,3 @@
-// pages/api/proxy.js
 export default async function handler(req, res) {
 
   if (req.method !== "POST") {
@@ -22,7 +21,7 @@ export default async function handler(req, res) {
     const gasRes = await fetch(url,{
       method:"POST",
       headers:{
-        "Content-Type":"text/plain;charset=utf-8"
+        "Content-Type":"application/json"
       },
       body: JSON.stringify(req.body)
     });
@@ -34,13 +33,11 @@ export default async function handler(req, res) {
     try{
       json = JSON.parse(text);
     }catch(e){
-
       return res.status(500).json({
         success:false,
         error:"Response bukan JSON dari Apps Script",
         raw:text
       });
-
     }
 
     return res.status(200).json(json);
