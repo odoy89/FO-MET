@@ -379,7 +379,7 @@ const merkList = useMemo(() => {
   const base64 = await fileToBase64(row.file);
   const base64Data = String(base64).split(",")[1] || base64;
 
-  const upRes = await apiPost("uploadFile", {
+ const upRes = await apiPost("uploadFile", {
   data: base64Data,
   mimeType: row.file.type || "application/octet-stream",
   filename: row.file.name,
@@ -387,11 +387,12 @@ const merkList = useMemo(() => {
 
 console.log("UPLOAD RESPONSE:", upRes);
 
-// apiPost sudah return json.data (URL file)
-if (upRes) {
+// VALIDASI URL DRIVE
+if (typeof upRes === "string" && upRes.includes("drive.google.com")) {
   fileUrl = upRes;
 } else {
-  throw new Error("Upload file gagal");
+  console.error("Upload gagal:", upRes);
+  throw new Error("Upload file gagal dari server");
 }
 }
 
@@ -1243,8 +1244,9 @@ if (upRes) {
                         <td>{r[11] || "-"}</td>     {/* Peruntukan */}
                         <td>
                           {r[10] ? (
-                                     <a href={r[10]} target="_blank" rel="noreferrer">Lihat</a>
-                                 ) : "-"}
+                                     <a href={typeof r[10] === "string" && r[10].includes("drive.google.com") ? (
+  <a href={r[10]} target="_blank" rel="noreferrer">Lihat</a>
+) : "-"}
                         </td>
                       <td>{badge}</td>            {/* Status */}
                         <td>
@@ -1553,5 +1555,6 @@ if (upRes) {
     
   );
 }
+
 
 
