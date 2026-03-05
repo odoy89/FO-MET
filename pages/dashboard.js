@@ -1237,13 +1237,13 @@ fileUrl = upRes || "";
                         <td>{r[13] || "-"}</td>     {/* Error (%) */}
                         <td>{r[11] || "-"}</td>     {/* Peruntukan */}
                       <td>
-  {typeof r[10] === "string" && r[10].includes("drive.google.com") ? (
-    <a href={r[10]} target="_blank" rel="noreferrer">
-      Lihat
-    </a>
-  ) : (
-    "-"
-  )}
+{typeof r[10] === "string" && r[10].startsWith("http") ? (
+  <a href={r[10]} target="_blank" rel="noreferrer">
+    Lihat
+  </a>
+) : (
+  "-"
+)}
 </td>
                       <td>{badge}</td>            {/* Status */}
                         <td>
@@ -1552,6 +1552,7 @@ fileUrl = upRes || "";
     
   );
 }
+
 
 
 
