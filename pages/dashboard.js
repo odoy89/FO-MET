@@ -379,7 +379,7 @@ const merkList = useMemo(() => {
   const base64 = await fileToBase64(row.file);
   const base64Data = String(base64).split(",")[1] || base64;
 
- const upRes = await apiPost("uploadFile", {
+const upRes = await apiPost("uploadFile", {
   data: base64Data,
   mimeType: row.file.type || "application/octet-stream",
   filename: row.file.name,
@@ -387,11 +387,9 @@ const merkList = useMemo(() => {
 
 console.log("UPLOAD RESPONSE:", upRes);
 
-// VALIDASI URL DRIVE
-if (typeof upRes === "string" && upRes.includes("drive.google.com")) {
-  fileUrl = upRes;
+if (upRes.success && upRes.data) {
+  fileUrl = upRes.data;
 } else {
-  console.error("Upload gagal:", upRes);
   throw new Error("Upload file gagal dari server");
 }
 }
@@ -1558,6 +1556,7 @@ if (typeof upRes === "string" && upRes.includes("drive.google.com")) {
     
   );
 }
+
 
 
 
