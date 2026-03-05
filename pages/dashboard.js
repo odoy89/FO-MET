@@ -387,11 +387,7 @@ const upRes = await apiPost("uploadFile", {
 
 console.log("UPLOAD RESPONSE:", upRes);
 
-if (upRes.success && upRes.data) {
-  fileUrl = upRes.data;
-} else {
-  throw new Error("Upload file gagal dari server");
-}
+fileUrl = upRes.data || "";
 }
 
         payloadArray.push({
@@ -1556,6 +1552,7 @@ if (upRes.success && upRes.data) {
     
   );
 }
+
 
 
 
