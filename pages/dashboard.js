@@ -1242,12 +1242,15 @@ if (typeof upRes === "string" && upRes.includes("drive.google.com")) {
                         <td>{r[9] || "-"}</td>      {/* SN */}
                         <td>{r[13] || "-"}</td>     {/* Error (%) */}
                         <td>{r[11] || "-"}</td>     {/* Peruntukan */}
-                        <td>
-                          {r[10] ? (
-                                     <a href={typeof r[10] === "string" && r[10].includes("drive.google.com") ? (
-  <a href={r[10]} target="_blank" rel="noreferrer">Lihat</a>
-) : "-"}
-                        </td>
+                      <td>
+  {typeof r[10] === "string" && r[10].includes("drive.google.com") ? (
+    <a href={r[10]} target="_blank" rel="noreferrer">
+      Lihat
+    </a>
+  ) : (
+    "-"
+  )}
+</td>
                       <td>{badge}</td>            {/* Status */}
                         <td>
                           {roleLogin === "ADMINISTRATOR" ? (
@@ -1555,6 +1558,7 @@ if (typeof upRes === "string" && upRes.includes("drive.google.com")) {
     
   );
 }
+
 
 
 
