@@ -387,7 +387,7 @@ const upRes = await apiPost("uploadFile", {
 
 console.log("UPLOAD RESPONSE:", upRes);
 
-fileUrl = upRes.data || "";
+fileUrl = upRes || "";
 }
 
         payloadArray.push({
@@ -1552,6 +1552,7 @@ fileUrl = upRes.data || "";
     
   );
 }
+
 
 
 
