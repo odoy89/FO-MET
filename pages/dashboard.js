@@ -380,19 +380,19 @@ const merkList = useMemo(() => {
   const base64Data = String(base64).split(",")[1] || base64;
 
   const upRes = await apiPost("uploadFile", {
-    data: base64Data,
-    mimeType: row.file.type || "application/octet-stream",
-    filename: row.file.name,
-  });
+  data: base64Data,
+  mimeType: row.file.type || "application/octet-stream",
+  filename: row.file.name,
+});
 
-  console.log("UPLOAD RESPONSE:", upRes);
+console.log("UPLOAD RESPONSE:", upRes);
 
-  // ambil URL dari response Apps Script
-  if (upRes && upRes.success) {
-    fileUrl = upRes.data;
-  } else {
-    throw new Error("Upload file gagal");
-  }
+// apiPost sudah return json.data (URL file)
+if (upRes) {
+  fileUrl = upRes;
+} else {
+  throw new Error("Upload file gagal");
+}
 }
 
         payloadArray.push({
@@ -1553,4 +1553,5 @@ const merkList = useMemo(() => {
     
   );
 }
+
 
