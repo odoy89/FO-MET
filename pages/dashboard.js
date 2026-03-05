@@ -369,19 +369,31 @@ const merkList = useMemo(() => {
         let fileUrl = row.fileUrl || "";
 
         if (row.file) {
-          const base64 = await fileToBase64(row.file);
-          const base64Data = String(base64).split(",")[1] || base64;
-          const upRes = await apiPost("uploadFile", {
-            data: base64Data,
-            mimeType: row.file.type,
-            filename: row.file.name,
-          });
-          // asumsi apiPost untuk uploadFile mengembalikan URL langsung
-          fileUrl = typeof upRes === "string"
-  ? upRes
-  : (upRes?.data || upRes?.url || "");
 
-        }
+  // validasi ukuran file (maks 5MB supaya Apps Script tidak gagal)
+  if (row.file.size > 5 * 1024 * 1024) {
+    Swal.fire("File terlalu besar", "Maksimal 5MB", "warning");
+    continue;
+  }
+
+  const base64 = await fileToBase64(row.file);
+  const base64Data = String(base64).split(",")[1] || base64;
+
+  const upRes = await apiPost("uploadFile", {
+    data: base64Data,
+    mimeType: row.file.type || "application/octet-stream",
+    filename: row.file.name,
+  });
+
+  console.log("UPLOAD RESPONSE:", upRes);
+
+  // ambil URL dari response Apps Script
+  if (upRes && upRes.success) {
+    fileUrl = upRes.data;
+  } else {
+    throw new Error("Upload file gagal");
+  }
+}
 
         payloadArray.push({
           tanggal: row.tanggal || "",
@@ -1541,3 +1553,4 @@ const merkList = useMemo(() => {
     
   );
 }
+
