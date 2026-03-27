@@ -706,7 +706,7 @@ fileUrl = upRes.data?.data || upRes.data || "";
     alt="Logo PLN"
     style={{ height: 70 }}
   />
- <h6 className="mt-1 mb-0">{namaUser}</h6>
+ <h6 className="mt-1 mb-0">UID LAMPUNG</h6>
 </div>
 
 {/* Tengah: FO⚡MET */}
