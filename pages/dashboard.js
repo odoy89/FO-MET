@@ -261,15 +261,24 @@ const countSummary = useMemo(() => {
 
   // ====== 5. DATA GRAFIK ======
   const chartData = useMemo(() => {
-    let sumber = allData || [];
+   let sumber = allData || [];
 
-    if (roleLogin !== "ADMINISTRATOR" && userUnit) {
-      sumber = sumber.filter((r) => String(r[1] || "").trim() === userUnit);
-    } else if (roleLogin === "ADMINISTRATOR" && chartUnitFilter) {
-      sumber = sumber.filter(
-        (r) => String(r[1] || "").trim() === chartUnitFilter
-      );
-    }
+const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+
+// 🔥 kalau admin UP3 → filter sesuai mapping
+if (allowedUnits.length) {
+  sumber = sumber.filter((r) =>
+    allowedUnits.includes(String(r[1] || "").trim())
+  );
+}
+
+// 🔥 kalau super admin + pilih filter
+else if (roleLogin === "ADMINISTRATOR" && chartUnitFilter) {
+  sumber = sumber.filter(
+    (r) => String(r[1] || "").trim() === chartUnitFilter
+  );
+}
+
 
     const perUnitPBPD = {};
     const perUnitHAR = {};
@@ -670,7 +679,7 @@ fileUrl = upRes.data?.data || upRes.data || "";
     alt="Logo PLN"
     style={{ height: 70 }}
   />
-  <h6 className="mt-1 mb-0">UP3 TANJUNG KARANG</h6>
+ <h6 className="mt-1 mb-0">{namaUser}</h6>
 </div>
 
 {/* Tengah: FO⚡MET */}
@@ -981,12 +990,17 @@ fileUrl = upRes.data?.data || upRes.data || "";
               disabled={roleLogin !== "ADMINISTRATOR"}
             >
               <option value="">-- Semua Unit --</option>
-              {roleLogin === "ADMINISTRATOR"
-                ? units.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))
+              {(() => {
+  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+
+  const showUnits = allowedUnits.length
+    ? units.filter(u => allowedUnits.includes(u))
+    : units;
+
+  return showUnits.map((u) => (
+    <option key={u} value={u}>{u}</option>
+  ));
+})()}
                 : userUnit && <option value={userUnit}>{userUnit}</option>}
             </select>
           </div>
@@ -1320,7 +1334,7 @@ fileUrl = upRes.data?.data || upRes.data || "";
   </div>
 
   <div className="footer-text">
-     <strong>FO⚡MET</strong> — Form Setting Meter - <strong>UP3 TANJUNG KARANG </strong><br />
+     <strong>FO⚡MET</strong> — Form Setting Meter - <strong>UID LAMPUNG </strong><br />
         <span className="footer-sub">Powered By TEL © 2025</span>
   </div>
 </footer>
