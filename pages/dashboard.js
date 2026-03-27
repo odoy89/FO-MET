@@ -270,6 +270,13 @@ if (allowedUnits.length) {
   sumber = sumber.filter((r) =>
     allowedUnits.includes(String(r[1] || "").trim())
   );
+
+  // kalau pilih filter unit spesifik
+  if (chartUnitFilter) {
+    sumber = sumber.filter(
+      (r) => String(r[1] || "").trim() === chartUnitFilter
+    );
+  }
 }
 
 // 🔥 kalau super admin + pilih filter
@@ -983,26 +990,25 @@ fileUrl = upRes.data?.data || upRes.data || "";
               Filter Grafik per Unit:
             </label>
             <select
-              id="chartUnitFilter"
-              className="form-select form-select-sm"
-              value={roleLogin === "ADMINISTRATOR" ? chartUnitFilter : userUnit}
-              onChange={(e) => setChartUnitFilter(e.target.value)}
-              disabled={roleLogin !== "ADMINISTRATOR"}
-            >
-              <option value="">-- Semua Unit --</option>
-              {(() => {
-  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+  id="chartUnitFilter"
+  className="form-select form-select-sm"
+  value={chartUnitFilter}
+  onChange={(e) => setChartUnitFilter(e.target.value)}
+>
+  <option value="">-- Semua Unit --</option>
 
-  const showUnits = allowedUnits.length
-    ? units.filter(u => allowedUnits.includes(u))
-    : units;
+  {(() => {
+    const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
 
-  return showUnits.map((u) => (
-    <option key={u} value={u}>{u}</option>
-  ));
-})()}
-                : userUnit && <option value={userUnit}>{userUnit}</option>}
-            </select>
+    const showUnits = allowedUnits.length
+      ? units.filter(u => allowedUnits.includes(u))
+      : units;
+
+    return showUnits.map((u) => (
+      <option key={u} value={u}>{u}</option>
+    ));
+  })()}
+</select>
           </div>
 
           {/* CHARTS */}
