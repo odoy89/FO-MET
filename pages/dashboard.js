@@ -198,7 +198,11 @@ const filteredTableData = useMemo(() => {
     const status = String(row[12] || "").trim();
 
     // USER hanya boleh lihat data unit-nya sendiri
-    if (roleLogin !== "ADMINISTRATOR" && unit !== userUnit) return false;
+    const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+
+if (allowedUnits.length && !allowedUnits.includes(unit)) {
+  return false;
+}
 
     // =============================
     //     FILTER TANGGAL DARI / SAMPAI
@@ -320,23 +324,15 @@ const countSummary = useMemo(() => {
 
   const allUnits = [...new Set(tarifData.map((r) => r[0]))];
 
-  if (roleLogin === "ADMINISTRATOR") {
-    return allUnits; // admin bebas
-  }
+  // 🔥 ambil scope berdasarkan NAMA
+  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
 
-  // mapping UNIT per admin UP3
-  const mapping = {
-    "admintjk": ["17100","17110","17120","17130","17131","17150","17180"],
-    "adminpsw": ["17400","17410","17420","17430","17440"],
-    "adminktb": ["17300","17330","17340","17350","17360","17370"],
-    "adminmtr": ["17200","17210","17220","17270","17280"],
-  };
-
-  const allowedUnits = mapping[userUnit] || [];
+  // ADMIN SUPER (yang gak ada di mapping)
+  if (!allowedUnits.length) return allUnits;
 
   return allUnits.filter(u => allowedUnits.includes(u));
 
-}, [tarifData, roleLogin, userUnit]);
+}, [tarifData, namaUser]);
 
   // MERK unik (tanpa duplikat)
 const merkList = useMemo(() => {
@@ -1160,13 +1156,17 @@ fileUrl = upRes.data?.data || upRes.data || "";
                 disabled={roleLogin !== "ADMINISTRATOR"}
               >
                 <option value="">-- Semua Unit --</option>
-                {(roleLogin === "ADMINISTRATOR" ? units : [userUnit]).map(
-                  (u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  )
-                )}
+                {(() => {
+  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+
+  const showUnits = allowedUnits.length
+    ? units.filter(u => allowedUnits.includes(u))
+    : units;
+
+  return showUnits.map((u) => (
+    <option key={u} value={u}>{u}</option>
+  ));
+})()}
               </select>
             </div>
             <div className="col-md-2">
