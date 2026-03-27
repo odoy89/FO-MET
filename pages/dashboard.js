@@ -1,4 +1,13 @@
 // pages/dashboard.js
+
+const ADMIN_UNIT_SCOPE = {
+  "ADMIN UP3 TANJUNG KARANG": ["17100","17110","17120","17130","17131","17150","17180"],
+  "ADMIN UP3 PRINGSEWU": ["17400","17410","17420","17430","17440"],
+  "ADMIN UP3 KOTABUMI": ["17300","17330","17340","17350","17360","17370"],
+  "ADMIN UP3 METRO": ["17200","17210","17220","17270","17280"],
+};
+
+
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Swal from "sweetalert2";
@@ -308,9 +317,21 @@ const countSummary = useMemo(() => {
 
   // ====== 6. FORM MULTI-ROW ======
   const unitOptions = useMemo(() => {
-    const set = new Set(tarifData.map((r) => r[0]));
-    return Array.from(set);
-  }, [tarifData]);
+  const allUnits = [...new Set(tarifData.map((r) => r[0]))];
+
+  // ADMIN BESAR → semua unit
+  if (roleLogin === "ADMINISTRATOR" && !ADMIN_UNIT_SCOPE[userUnit]) {
+    return allUnits;
+  }
+
+  // ADMIN UP3 → dibatasi
+  if (ADMIN_UNIT_SCOPE[userUnit]) {
+    return allUnits.filter(u => ADMIN_UNIT_SCOPE[userUnit].includes(u));
+  }
+
+  // USER → hanya unit sendiri
+  return [userUnit];
+}, [tarifData, roleLogin, userUnit]);
 
   // MERK unik (tanpa duplikat)
 const merkList = useMemo(() => {
