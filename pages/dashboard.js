@@ -317,20 +317,25 @@ const countSummary = useMemo(() => {
 
   // ====== 6. FORM MULTI-ROW ======
   const unitOptions = useMemo(() => {
+
   const allUnits = [...new Set(tarifData.map((r) => r[0]))];
 
-  // ADMIN BESAR → semua unit
-  if (roleLogin === "ADMINISTRATOR" && !ADMIN_UNIT_SCOPE[userUnit]) {
-    return allUnits;
+  if (roleLogin === "ADMINISTRATOR") {
+    return allUnits; // admin bebas
   }
 
-  // ADMIN UP3 → dibatasi
-  if (ADMIN_UNIT_SCOPE[userUnit]) {
-    return allUnits.filter(u => ADMIN_UNIT_SCOPE[userUnit].includes(u));
-  }
+  // mapping UNIT per admin UP3
+  const mapping = {
+    "admintjk": ["17100","17110","17120","17130","17131","17150","17180"],
+    "adminpsw": ["17400","17410","17420","17430","17440"],
+    "adminktb": ["17300","17330","17340","17350","17360","17370"],
+    "adminmtr": ["17200","17210","17220","17270","17280"],
+  };
 
-  // USER → hanya unit sendiri
-  return [userUnit];
+  const allowedUnits = mapping[userUnit] || [];
+
+  return allUnits.filter(u => allowedUnits.includes(u));
+
 }, [tarifData, roleLogin, userUnit]);
 
   // MERK unik (tanpa duplikat)
