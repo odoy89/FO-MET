@@ -92,7 +92,12 @@ export default function DashboardPage() {
     .toUpperCase();
 
   const userUnit = (loginData?.unit || "").toString().trim();
-  const namaUser = loginData?.nama || loginData?.unit || "User";
+  const rawNama = loginData?.nama || loginData?.unit || "User";
+
+const namaUser = rawNama
+  .toUpperCase()
+  .replace("(ADMINISTRATOR)", "")
+  .trim();
 
   // helper: buat baris form kosong
   function createEmptyRow() {
