@@ -97,7 +97,9 @@ export default function DashboardPage() {
 const namaUser = rawNama
   .toUpperCase()
   .replace("(ADMINISTRATOR)", "")
-  .trim();
+  .replace(/\s+/g, " ")
+  .trim()
+  .replace(/\s$/, "");
 
   // helper: buat baris form kosong
   function createEmptyRow() {
@@ -146,12 +148,19 @@ const namaUser = rawNama
 
         // data terbaru di atas
         const po = Array.isArray(poRes?.data) ? [...poRes.data].reverse() : [];
-        setAllData(po);
+        setAllData(
+  po.map(r => {
+    r[1] = String(r[1] || "").trim().replace(/\s/g, "");
+    return r;
+  })
+);
 
         const u = Array.isArray(optRes?.data?.units)
           ? optRes.data.units
           : [];
-        setUnits(u);
+        setUnits(
+  (u || []).map(x => String(x).trim().replace(/\s/g, ""))
+);
 
         setTarifData(Array.isArray(tarifRes?.data) ? tarifRes.data : []);
         setDataKWH(Array.isArray(kwhRes?.data) ? kwhRes.data : []);
@@ -203,9 +212,13 @@ const filteredTableData = useMemo(() => {
     const status = String(row[12] || "").trim();
 
     // USER hanya boleh lihat data unit-nya sendiri
-    const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+    const keyUser = namaUser;
 
-if (allowedUnits.length && !allowedUnits.includes(unit)) {
+const allowedUnits = ADMIN_UNIT_SCOPE[keyUser] || [];
+
+const cleanUnit = String(unit).trim().replace(/\s/g, "");
+
+if (allowedUnits.length && !allowedUnits.includes(cleanUnit)) {
   return false;
 }
 
@@ -268,24 +281,20 @@ const countSummary = useMemo(() => {
   const chartData = useMemo(() => {
    let sumber = allData || [];
 
-const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+const keyUser = namaUser;
 
-// 🔥 kalau admin UP3 → filter sesuai mapping
+const allowedUnits = ADMIN_UNIT_SCOPE[keyUser] || [];
+
+// 🔥 filter berdasarkan role (admin UP3)
 if (allowedUnits.length) {
-  sumber = sumber.filter((r) =>
-    allowedUnits.includes(String(r[1] || "").trim())
-  );
-
-  // kalau pilih filter unit spesifik
-  if (chartUnitFilter) {
-    sumber = sumber.filter(
-      (r) => String(r[1] || "").trim() === chartUnitFilter
-    );
-  }
+  sumber = sumber.filter((r) => {
+    const cleanUnit = String(r[1] || "").trim().replace(/\s/g, "");
+    return allowedUnits.includes(cleanUnit);
+  });
 }
 
-// 🔥 kalau super admin + pilih filter
-else if (roleLogin === "ADMINISTRATOR" && chartUnitFilter) {
+// 🔥 filter dropdown unit (SEMUA ROLE)
+if (chartUnitFilter) {
   sumber = sumber.filter(
     (r) => String(r[1] || "").trim() === chartUnitFilter
   );
@@ -343,7 +352,13 @@ else if (roleLogin === "ADMINISTRATOR" && chartUnitFilter) {
   // ====== 6. FORM MULTI-ROW ======
   const unitOptions = useMemo(() => {
 
-  const allUnits = [...new Set(tarifData.map((r) => r[0]))];
+ const allUnits = [
+  ...new Set(
+    tarifData.map((r) =>
+      String(r[0] || "").trim().replace(/\s/g, "")
+    )
+  ),
+];
 
   // 🔥 ambil scope berdasarkan NAMA
   const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
@@ -1006,7 +1021,9 @@ fileUrl = upRes.data?.data || upRes.data || "";
     const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
 
     const showUnits = allowedUnits.length
-      ? units.filter(u => allowedUnits.includes(u))
+      ? units.filter(u =>
+  allowedUnits.includes(String(u).trim().replace(/\s/g, ""))
+)
       : units;
 
     return showUnits.map((u) => (
@@ -1185,7 +1202,9 @@ fileUrl = upRes.data?.data || upRes.data || "";
   const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
 
   const showUnits = allowedUnits.length
-    ? units.filter(u => allowedUnits.includes(u))
+    ? units.filter(u =>
+  allowedUnits.includes(String(u).trim().replace(/\s/g, ""))
+)
     : units;
 
   return showUnits.map((u) => (
