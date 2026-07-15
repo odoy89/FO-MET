@@ -554,6 +554,18 @@ setTimeout(() => {
     }
   }
 
+  // ====== SHOW IMAGE ======
+  function handleShowImage(url) {
+    Swal.fire({
+      imageUrl: url,
+      imageAlt: "Foto",
+      showConfirmButton: false,
+      showCloseButton: true,
+      width: "80%",
+      padding: "1em",
+    });
+  }
+
   // ====== HAPUS ======
   async function handleDeleteRow(rowNumber) {
     if (!rowNumber) return;
@@ -941,6 +953,27 @@ setTimeout(() => {
       placeholder="%"
     />
   </div>
+
+  <div className="col-md-2">
+    <label>Upload Foto KWh</label>
+    <input
+      type="file"
+      className="form-control form-control-sm"
+      onChange={(e) =>
+        handleFormChange(idx, "foto", e.target.files?.[0] || null)
+      }
+    />
+    {row.fotoUrl && (
+      <a
+        href={row.fotoUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="small d-block text-info mt-1"
+      >
+        <i className="bi bi-image"></i> Lihat Foto Lama
+      </a>
+    )}
+  </div>
                     </>
                   )}
 
@@ -1250,9 +1283,9 @@ setTimeout(() => {
           </div>
 
           {/* TABEL DATA */}
-          <div style={{ maxHeight: 500, overflowY: "auto" }}>
-            <table className="table table-bordered table-striped mb-0">
-              <thead>
+          <div className="table-responsive" style={{ maxHeight: "500px", overflowY: "auto", overflowX: "auto" }}>
+            <table className="table table-bordered table-striped mb-0 table-hover align-middle" style={{ whiteSpace: "nowrap" }}>
+              <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#fff" }}>
                 <tr>
                   <th>No</th>
                   <th>Tanggal</th>
@@ -1268,8 +1301,7 @@ setTimeout(() => {
                   <th>Error (%)</th>
                   <th>Peruntukan</th>
                   <th>File PK</th>
-                  <th>Foto Admin</th>
-                  <th>Foto Admin</th>
+                  <th>Foto KWh</th>
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -1316,22 +1348,20 @@ setTimeout(() => {
                         <td>{r[11] || "-"}</td>     {/* Peruntukan */}
                       <td>
 {typeof r[10] === "string" && r[10].startsWith("http") ? (
-  <a href={r[10]} target="_blank" rel="noreferrer">
-    Lihat
-  </a>
+  <a href="#!" onClick={(e) => { e.preventDefault(); handleShowImage(r[10]); }} className="text-primary text-decoration-underline" style={{ cursor: "pointer" }}>Lihat</a>
 ) : (
   "-"
 )}
 </td>
 <td>
 {typeof r[14] === "string" && r[14].startsWith("http") ? (
-  <a href={r[14]} target="_blank" rel="noreferrer">Lihat</a>
+  <a href="#!" onClick={(e) => { e.preventDefault(); handleShowImage(r[14]); }} className="text-primary text-decoration-underline" style={{ cursor: "pointer" }}>Lihat</a>
 ) : ("-")}
 </td>
                       <td>{badge}</td>            {/* Status */}
                         <td>
                           {roleLogin === "ADMINISTRATOR" ? (
-                            <div className="d-flex flex-column gap-1">
+                            <div className="d-flex flex-row gap-1 justify-content-center">
                               <button
                                 className="btn btn-sm btn-outline-primary"
                                 onClick={() => handleEditRow(r)}
@@ -1372,7 +1402,7 @@ setTimeout(() => {
 
       </div>
 
-    </Sidebar>
+
 
       {/* Styling singkat */}
       <style jsx>{`
@@ -1600,36 +1630,14 @@ setTimeout(() => {
 `}</style>
 
 
- {/* ================= BOTTOM NAV ================= */}
- <div className={styles.bottomNav}>
-      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-        <i className="bi bi-house"></i><span>Home</span>
-      </button>
+ 
 
-      <button onClick={() => document.getElementById("form-area")?.scrollIntoView({ behavior: "smooth" })}>
-        <i className="bi bi-pencil-square"></i><span>Input</span>
-      </button>
 
-      <button onClick={() => document.getElementById("table-area")?.scrollIntoView({ behavior: "smooth" })}>
-        <i className="bi bi-table"></i><span>Data</span>
-      </button>
-
-      <button onClick={() => document.getElementById("charts")?.scrollIntoView({ behavior: "smooth" })}>
-        <i className="bi bi-bar-chart"></i><span>Grafik</span>
-      </button>
     </div>
-
-
-  </div>
-    
+  </Sidebar>
   );
+
+
+
+
 }
-
-
-
-
-
-
-
-
-
