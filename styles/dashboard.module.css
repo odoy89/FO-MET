@@ -1,0 +1,146 @@
+/* ================================
+   BOTTOM NAV
+================================ */
+
+.bottomNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #ffffff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .bottomNav button {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    color: #333;
+  }
+  
+  .bottomNav button i {
+    font-size: 18px;
+    margin-bottom: -2px;
+  }
+  
+  /* ================================
+     FLOATING BUTTON
+  ================================ */
+  .fabBtn {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #006cff;
+    color: white;
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    z-index: 9999;
+    border: none;
+    cursor: pointer;
+  }
+  /* =========================================================
+   RESPONSIVE MOBILE MODE (≤ 768px)
+   ========================================================= */
+@media (max-width: 768px) {
+
+    /* ==== WRAPPER ==== */
+    .mobileFullWidth {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  
+    /* ==== HEADER ==== */
+    .headerWrapper {
+      flex-direction: column !important;
+      text-align: center !important;
+      gap: 10px;
+    }
+  
+    .headerLeft img {
+      height: 50px !important;
+    }
+  
+    .headerRight {
+      text-align: center !important;
+      width: 100%;
+    }
+  
+    /* ==== FORM ==== */
+    .form-area {
+      padding: 14px !important;
+    }
+  
+    /* Semua kolom form jadi full width */
+    .form-area :global(.row > div) {
+      flex: 0 0 100% !important;
+      max-width: 100% !important;
+    }
+  
+    /* Input & select full width */
+    .form-area :global(input),
+    .form-area :global(select),
+    .form-area :global(button) {
+      width: 100% !important;
+    }
+  
+    /* ==== CHART ==== */
+    .chart-container {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 15px !important;
+    }
+  
+    .chart-card {
+      height: auto !important;
+    }
+  
+    /* ==== TABLE ==== */
+    .table-area {
+      padding: 12px !important;
+      overflow-x: auto !important;
+    }
+  
+    .table-area :global(table) {
+      min-width: 900px !important;
+      font-size: 12px !important;
+    }
+  
+    .table-area :global(td),
+    .table-area :global(th) {
+      white-space: nowrap !important;
+    }
+  
+    /* ==== FLOATING BUTTON ==== */
+    .fabBtn {
+      bottom: 85px !important;
+      right: 15px !important;
+    }
+  
+    /* ==== BOTTOM NAV ==== */
+    .bottomNav {
+      height: 58px !important;
+    }
+  
+    .bottomNav button i {
+      font-size: 18px !important;
+    }
+  
+    .bottomNav button span {
+      font-size: 10px !important;
+    }
+  }
+  
