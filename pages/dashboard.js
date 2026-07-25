@@ -28,6 +28,8 @@ import {
 } from "chart.js";
 
 import { apiPost } from "../lib/api";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Capacitor } from "@capacitor/core";
 
 ChartJS.register(
   CategoryScale,
@@ -425,6 +427,55 @@ const merkList = useMemo(() => {
   return [...new Set(dataKWH.map((k) => k.merk))];
 }, [dataKWH]);
 
+
+  async function handleFotoUpload(idx, field) {
+    if (typeof window !== "undefined" && !window.Capacitor?.isNativePlatform()) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.capture = "environment";
+      input.onchange = (e) => {
+        handleFormChange(idx, field, e.target.files?.[0] || null);
+      };
+      input.click();
+      return;
+    }
+    try {
+      const result = await Swal.fire({
+        title: "Pilih Sumber Foto",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "📸 Kamera",
+        denyButtonText: "📁 Galeri",
+        cancelButtonText: "Batal",
+        reverseButtons: true,
+      });
+      let source;
+      if (result.isConfirmed) {
+        source = CameraSource.Camera;
+      } else if (result.isDenied) {
+        source = CameraSource.Photos;
+      } else {
+        return;
+      }
+      const image = await Camera.getPhoto({
+        quality: 70,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: source,
+      });
+      if (image.webPath) {
+        const response = await fetch(image.webPath);
+        const blob = await response.blob();
+        const file = new File([blob], `foto_${Date.now()}.${image.format || "jpg"}`, {
+          type: `image/${image.format || "jpeg"}`,
+        });
+        handleFormChange(idx, field, file);
+      }
+    } catch (err) {
+      console.log("Kamera dibatalkan atau error", err);
+    }
+  }
 
   function handleFormChange(idx, field, value) {
     setFormRows((prev) => {
@@ -1073,15 +1124,18 @@ setTimeout(() => {
 
   <div className="col-md-2">
     <label>Upload Foto KWh</label>
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      className="form-control form-control-sm"
-      onChange={(e) =>
-        handleFormChange(idx, "foto", e.target.files?.[0] || null)
-      }
-    />
+    <button
+      type="button"
+      className="btn btn-sm btn-outline-primary w-100 mt-1"
+      onClick={() => handleFotoUpload(idx, "foto")}
+    >
+      📸 Buka Kamera / Galeri
+    </button>
+    {row.foto && (
+      <span className="small text-success d-block mt-1 fw-bold">
+        ✔ {row.foto.name || "Foto Siap"}
+      </span>
+    )}
     {row.fotoUrl && (
       <a
         href={row.fotoUrl}
@@ -1095,15 +1149,18 @@ setTimeout(() => {
   </div>
   <div className="col-md-2">
     <label>Foto Segel Kiri</label>
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      className="form-control form-control-sm"
-      onChange={(e) =>
-        handleFormChange(idx, "fotoSegelKiri", e.target.files?.[0] || null)
-      }
-    />
+    <button
+      type="button"
+      className="btn btn-sm btn-outline-primary w-100 mt-1"
+      onClick={() => handleFotoUpload(idx, "fotoSegelKiri")}
+    >
+      📸 Buka Kamera / Galeri
+    </button>
+    {row.fotoSegelKiri && (
+      <span className="small text-success d-block mt-1 fw-bold">
+        ✔ {row.fotoSegelKiri.name || "Foto Siap"}
+      </span>
+    )}
     {row.fotoSegelKiriUrl && (
       <a
         href={row.fotoSegelKiriUrl}
@@ -1117,15 +1174,18 @@ setTimeout(() => {
   </div>
   <div className="col-md-2">
     <label>Foto Segel Kanan</label>
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      className="form-control form-control-sm"
-      onChange={(e) =>
-        handleFormChange(idx, "fotoSegelKanan", e.target.files?.[0] || null)
-      }
-    />
+    <button
+      type="button"
+      className="btn btn-sm btn-outline-primary w-100 mt-1"
+      onClick={() => handleFotoUpload(idx, "fotoSegelKanan")}
+    >
+      📸 Buka Kamera / Galeri
+    </button>
+    {row.fotoSegelKanan && (
+      <span className="small text-success d-block mt-1 fw-bold">
+        ✔ {row.fotoSegelKanan.name || "Foto Siap"}
+      </span>
+    )}
     {row.fotoSegelKananUrl && (
       <a
         href={row.fotoSegelKananUrl}
