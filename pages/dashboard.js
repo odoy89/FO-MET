@@ -429,17 +429,6 @@ const merkList = useMemo(() => {
 
 
   async function handleFotoUpload(idx, field) {
-    if (typeof window !== "undefined" && !window.Capacitor?.isNativePlatform()) {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.capture = "environment";
-      input.onchange = (e) => {
-        handleFormChange(idx, field, e.target.files?.[0] || null);
-      };
-      input.click();
-      return;
-    }
     try {
       const result = await Swal.fire({
         title: "Pilih Sumber Foto",
@@ -458,13 +447,31 @@ const merkList = useMemo(() => {
       } else {
         return;
       }
-      const image = await Camera.getPhoto({
-        quality: 70,
-        allowEditing: false,
-        resultType: CameraResultType.Uri,
-        source: source,
-      });
-      if (image.webPath) {
+      let image;
+      try {
+        image = await Camera.getPhoto({
+          quality: 70,
+          allowEditing: false,
+          resultType: CameraResultType.Uri,
+          source: source,
+        });
+      } catch (camErr) {
+        console.warn("Capacitor camera failed (maybe on web), falling back", camErr);
+        // Fallback manual jika di Web/PC error
+        return new Promise((resolve) => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          if (source === CameraSource.Camera) input.capture = "environment";
+          input.onchange = (e) => {
+            handleFormChange(idx, field, e.target.files?.[0] || null);
+            resolve();
+          };
+          input.click();
+        });
+      }
+      
+      if (image && image.webPath) {
         const response = await fetch(image.webPath);
         const blob = await response.blob();
         const file = new File([blob], `foto_${Date.now()}.${image.format || "jpg"}`, {
