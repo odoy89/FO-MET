@@ -1,0 +1,9 @@
+{
+  "appId": "com.fomet.app",
+  "appName": "FO MET App",
+  "webDir": "out",
+  "server": {
+    "url": "https://fo-met.vercel.app",
+    "cleartext": true
+  }
+}

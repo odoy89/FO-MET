@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import Swal from 'sweetalert2';
+import { useState } from "react";
 
 export default function Sidebar({ children, loginData }) {
   const router = useRouter();
@@ -9,60 +10,94 @@ export default function Sidebar({ children, loginData }) {
 
   const menu = [
     { name: "Dashboard", path: "/dashboard", icon: "bi-house-door" },
-    ...(isAdmin ? [{ name: "Settings", path: "/settings", icon: "bi-gear" }] : []),
+    ...(isAdmin ? [{ name: "Settings Master", path: "/settings", icon: "bi-gear" }] : []),
   ];
 
-  function handleLogout() {
+  async function handleLogout() {
     if (typeof window !== "undefined") {
-      window.localStorage.removeItem("loginData");
-      router.replace("/");
+      const res = await Swal.fire({
+        title: 'Yakin Anda ingin Logout?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
+      });
+      if (res.isConfirmed) {
+        window.localStorage.removeItem("loginData");
+        router.replace("/");
+      }
     }
   }
 
   return (
     <div className="layout-wrapper">
-      {/* Mobile Header / Toggle */}
-      <div className="mobile-header d-md-none d-flex justify-content-between align-items-center p-3">
-        <div className="logo-area d-flex align-items-center">
-          <span style={{ fontSize: 24, fontWeight: 900, color: "#0d6efd" }}>FO</span>
-          <span style={{ fontSize: 24, fontWeight: 900, color: "orange", margin: "0 2px" }}>⚡</span>
-          <span style={{ fontSize: 24, fontWeight: 900, color: "#0d6efd" }}>MET</span>
-        </div>
-        <button className="btn btn-outline-primary btn-sm" onClick={() => setIsMobileOpen(!isMobileOpen)}>
-          <i className={`bi ${isMobileOpen ? "bi-x-lg" : "bi-list"}`}></i>
-        </button>
-      </div>
+      {/* Top Navbar */}
+      <nav className="top-navbar shadow-sm">
+        <div className="container-fluid d-flex justify-content-between align-items-center h-100 px-4">
+          
+          {/* Logo Area */}
+          <div className="logo-area d-flex align-items-center">
+            <span style={{ fontSize: 24, fontWeight: 900, color: "#0d6efd" }}>FO</span>
+            <span style={{ fontSize: 24, fontWeight: 900, color: "orange", margin: "0 2px" }}>⚡</span>
+            <span style={{ fontSize: 24, fontWeight: 900, color: "#0d6efd", marginRight: "30px" }}>MET</span>
 
-      {/* Sidebar */}
-      <nav className={`sidebar ${isMobileOpen ? "open" : ""}`}>
-        <div className="sidebar-brand d-none d-md-flex align-items-center justify-content-center pt-4 pb-3">
-          <span style={{ fontSize: 32, fontWeight: 900, color: "#0d6efd" }}>FO</span>
-          <span style={{ fontSize: 32, fontWeight: 900, color: "orange", margin: "0 2px" }}>⚡</span>
-          <span style={{ fontSize: 32, fontWeight: 900, color: "#0d6efd" }}>MET</span>
-        </div>
+            {/* Desktop Menu */}
+            <div className="d-none d-md-flex gap-3">
+              {menu.map((m) => {
+                const active = router.pathname === m.path;
+                return (
+                  <Link key={m.path} href={m.path} className={`nav-menu-item ${active ? "active" : ""}`}>
+                    <i className={`bi ${m.icon}`}></i>
+                    <span>{m.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
 
-        <div className="sidebar-menu mt-3">
+          {/* User & Logout (Desktop) */}
+          <div className="d-none d-md-flex align-items-center gap-3">
+            <div className="text-end">
+              <strong style={{ fontSize: 13, color: "#334155", display: "block" }}>{loginData?.nama || "User"}</strong>
+              <span className="badge bg-light text-primary border" style={{ fontSize: 10 }}>{loginData?.role}</span>
+            </div>
+            <button className="btn btn-outline-danger btn-sm fw-bold" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </div>
+
+          {/* Mobile Toggle */}
+          <button className="btn btn-light d-md-none border-0" onClick={() => setIsMobileOpen(!isMobileOpen)}>
+            <i className={`bi ${isMobileOpen ? "bi-x-lg" : "bi-list"}`} style={{ fontSize: 24 }}></i>
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileOpen && (
+        <div className="mobile-menu d-md-none shadow-sm">
           {menu.map((m) => {
             const active = router.pathname === m.path;
             return (
-              <Link key={m.path} href={m.path} className={`menu-item ${active ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
+              <Link key={m.path} href={m.path} className={`mobile-menu-item ${active ? "active" : ""}`} onClick={() => setIsMobileOpen(false)}>
                 <i className={`bi ${m.icon}`}></i>
                 <span>{m.name}</span>
               </Link>
             );
           })}
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="user-info mb-3 px-3 text-center">
-            <small className="text-muted d-block">Login as:</small>
-            <strong style={{ fontSize: 13, color: "#444" }}>{loginData?.nama || "User"}</strong>
+          <div className="p-3 border-top bg-light">
+            <div className="mb-2 text-center">
+              <strong style={{ fontSize: 13, color: "#334155", display: "block" }}>{loginData?.nama || "User"}</strong>
+              <span className="badge bg-white text-primary border" style={{ fontSize: 10 }}>{loginData?.role}</span>
+            </div>
+            <button className="btn btn-danger w-100 fw-bold shadow-sm btn-sm" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right"></i> Logout
+            </button>
           </div>
-          <button className="btn btn-danger w-100" onClick={handleLogout}>
-            <i className="bi bi-box-arrow-right"></i> Logout
-          </button>
         </div>
-      </nav>
+      )}
 
       {/* Main Content */}
       <main className="main-content">
@@ -72,84 +107,102 @@ export default function Sidebar({ children, loginData }) {
       <style jsx>{`
         .layout-wrapper {
           display: flex;
+          flex-direction: column;
           min-height: 100vh;
-          background: #f4f7fb;
+          background: #f1f5f9;
         }
 
-        .mobile-header {
+        .top-navbar {
           background: white;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid #e2e8f0;
+          height: 65px;
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
-          z-index: 1001;
-        }
-
-        .sidebar {
-          width: 260px;
-          background: white;
-          border-right: 1px solid #eef2f6;
-          display: flex;
-          flex-direction: column;
-          position: fixed;
-          top: 0;
-          bottom: 0;
           z-index: 1000;
-          transition: transform 0.3s ease;
         }
 
-        .sidebar-menu {
-          flex: 1;
-          padding: 0 15px;
-        }
-
-        .menu-item {
+        .nav-menu-item {
           display: flex;
           align-items: center;
-          padding: 12px 15px;
-          color: #555;
+          padding: 8px 16px;
+          color: #475569;
           text-decoration: none;
-          border-radius: 10px;
-          margin-bottom: 8px;
+          border-radius: 8px;
           font-weight: 500;
+          font-size: 14px;
           transition: all 0.2s;
         }
 
-        .menu-item i {
-          font-size: 20px;
+        .nav-menu-item i {
+          font-size: 18px;
+          margin-right: 8px;
+          color: #94a3b8;
+        }
+
+        .nav-menu-item:hover {
+          background: #f8fafc;
+          color: #2563eb;
+        }
+        .nav-menu-item:hover i {
+          color: #2563eb;
+        }
+
+        .nav-menu-item.active {
+          background: #eff6ff;
+          color: #2563eb;
+          font-weight: 600;
+        }
+        .nav-menu-item.active i {
+          color: #2563eb;
+        }
+
+        .mobile-menu {
+          position: fixed;
+          top: 65px;
+          left: 0;
+          right: 0;
+          background: white;
+          z-index: 999;
+          border-bottom: 1px solid #e2e8f0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .mobile-menu-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 20px;
+          color: #475569;
+          text-decoration: none;
+          font-weight: 500;
+          font-size: 15px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .mobile-menu-item i {
+          font-size: 18px;
           margin-right: 12px;
+          color: #94a3b8;
         }
-
-        .menu-item:hover, .menu-item.active {
-          background: #e9f0fc;
-          color: #0d6efd;
+        .mobile-menu-item.active {
+          background: #eff6ff;
+          color: #2563eb;
+          font-weight: 600;
         }
-
-        .sidebar-footer {
-          padding: 20px;
-          border-top: 1px solid #eef2f6;
+        .mobile-menu-item.active i {
+          color: #2563eb;
         }
 
         .main-content {
+          margin-top: 65px; /* Navbar height */
+          padding: 20px;
           flex: 1;
-          margin-left: 260px;
-          min-width: 0;
-          padding-bottom: 40px;
         }
 
         @media (max-width: 768px) {
-          .sidebar {
-            transform: translateX(-100%);
-            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
-            padding-top: 70px;
-          }
-          .sidebar.open {
-            transform: translateX(0);
-          }
           .main-content {
-            margin-left: 0;
-            margin-top: 60px;
+            padding: 10px;
           }
         }
       `}</style>

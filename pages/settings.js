@@ -4,6 +4,14 @@ import Swal from "sweetalert2";
 import Sidebar from "../components/Sidebar";
 import { apiPost } from "../lib/api";
 
+
+const ADMIN_UNIT_SCOPE = {
+  "ADMIN UP3 TANJUNG KARANG": ["17100","17110","17120","17130","17131","17150","17180"],
+  "ADMIN UP3 PRINGSEWU": ["17400","17410","17420","17430","17440"],
+  "ADMIN UP3 KOTABUMI": ["17300","17330","17340","17350","17360","17370"],
+  "ADMIN UP3 METRO": ["17200","17210","17220","17270","17280"],
+};
+
 export default function SettingsPage() {
   const router = useRouter();
   const [loginData, setLoginData] = useState(null);
@@ -108,27 +116,49 @@ export default function SettingsPage() {
 
   if (!loginData) return null;
 
+  
+  const roleLogin = loginData?.role || "USER";
+  const userUnit = loginData?.unit || "";
+  const rawNama = loginData?.nama || userUnit;
+  const namaUser = rawNama.toUpperCase().replace("(ADMINISTRATOR)", "").trim();
+  const isAdminSuper = (userUnit === "admin" || userUnit === "uid");
+  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+
+  const displayedUsers = users.filter(u => {
+    if (isAdminSuper) return true;
+    
+    const unitStr = String(u.unit || "").trim().replace(/\s/g, "");
+    const userUnitStr = String(userUnit).trim().replace(/\s/g, "");
+    
+    if (unitStr === userUnitStr) return true;
+    return allowedUnits.includes(unitStr);
+  });
+
   return (
     <Sidebar loginData={loginData}>
       <div className="p-4">
-        <h3 className="mb-4 text-primary" style={{ fontWeight: 800 }}>⚙️ Settings Master</h3>
+        <h4 className="mb-3 text-primary" style={{ fontWeight: 800 }}>⚙️ Settings Master</h4>
         
         <ul className="nav nav-tabs mb-4">
           <li className="nav-item">
             <button className={`nav-link fw-bold ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
           </li>
-          <li className="nav-item">
-            <button className={`nav-link fw-bold ${activeTab === 'tarif' ? 'active' : ''}`} onClick={() => setActiveTab('tarif')}>Tarif & Daya</button>
-          </li>
-          <li className="nav-item">
-            <button className={`nav-link fw-bold ${activeTab === 'kwh' ? 'active' : ''}`} onClick={() => setActiveTab('kwh')}>Merk & Type KWH</button>
-          </li>
+          {isAdminSuper && (
+            <>
+              <li className="nav-item">
+                <button className={`nav-link fw-bold ${activeTab === 'tarif' ? 'active' : ''}`} onClick={() => setActiveTab('tarif')}>Tarif & Daya</button>
+              </li>
+              <li className="nav-item">
+                <button className={`nav-link fw-bold ${activeTab === 'kwh' ? 'active' : ''}`} onClick={() => setActiveTab('kwh')}>Merk & Type KWH</button>
+              </li>
+            </>
+          )}
         </ul>
 
         {loading ? (
           <p>Memuat data...</p>
         ) : (
-          <div className="card shadow-sm border-0 p-4" style={{ borderRadius: 16 }}>
+          <div className="card shadow-sm border-0 p-3" style={{ borderRadius: 12 }}>
             {/* TAB USERS */}
             {activeTab === 'users' && (
               <div>
@@ -136,7 +166,16 @@ export default function SettingsPage() {
                 <form onSubmit={handleAddUser} className="row g-2 align-items-end mb-4">
                   <div className="col-md-3">
                     <label>Unit / Username</label>
-                    <input required className="form-control" value={formUser.unit} onChange={e=>setFormUser({...formUser, unit: e.target.value})} />
+                    
+  {isAdminSuper ? (
+    <input required className="form-control" value={formUser.unit} onChange={e=>setFormUser({...formUser, unit: e.target.value})} />
+  ) : (
+    <select required className="form-select" value={formUser.unit} onChange={e=>setFormUser({...formUser, unit: e.target.value})}>
+      <option value="">Pilih Unit</option>
+      {allowedUnits.map(u => <option key={u} value={u}>{u}</option>)}
+    </select>
+  )}
+
                   </div>
                   <div className="col-md-2">
                     <label>Password</label>
@@ -163,7 +202,7 @@ export default function SettingsPage() {
                     <tr><th>Unit/User</th><th>Password</th><th>Role</th><th>Nama</th><th>Aksi</th></tr>
                   </thead>
                   <tbody>
-                    {users.map(u => (
+                    {displayedUsers.map(u => (
                       <tr key={u.row}>
                         <td>{u.unit}</td><td>{u.password}</td><td>{u.role}</td><td>{u.nama}</td>
                         <td><button className="btn btn-sm btn-danger" onClick={()=>handleDeleteUser(u.row)}><i className="bi bi-trash"></i></button></td>

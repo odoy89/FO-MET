@@ -67,6 +67,7 @@ export default function DashboardPage() {
   // FORM multi row
   const [formRows, setFormRows] = useState([]);
   const [savingForm, setSavingForm] = useState(false);
+  const [showModalForm, setShowModalForm] = useState(false);
 
   // ====== 1. BACA LOGIN DARI LOCALSTORAGE ======
   useEffect(() => {
@@ -125,6 +126,10 @@ const namaUser = rawNama
       fileUrl: "",
       foto: null,
       fotoUrl: "",
+      fotoSegelKiri: null,
+      fotoSegelKiriUrl: "",
+      fotoSegelKanan: null,
+      fotoSegelKananUrl: "",
       status: "Belum",
       errorMeter: "",
       rowNumber: null,
@@ -249,7 +254,14 @@ if (allowedUnits.length && !allowedUnits.includes(cleanUnit)) {
     }
 
     // filter unit
-    if (filters.unit && unit !== filters.unit) return false;
+    if (filters.unit) {
+      if (filters.unit.startsWith("UP3 ")) {
+        const groupUnits = ADMIN_UNIT_SCOPE["ADMIN " + filters.unit] || [];
+        if (!groupUnits.includes(unit)) return false;
+      } else {
+        if (unit !== filters.unit) return false;
+      }
+    }
 
     // filter idpel
     if (filters.idpel && !idpel.toLowerCase().includes(filters.idpel.toLowerCase()))
@@ -267,7 +279,37 @@ if (allowedUnits.length && !allowedUnits.includes(cleanUnit)) {
   });
 }, [allData, filters, roleLogin, userUnit]);
 
-// ====== RINGKASAN SUDAH / BELUM ======
+
+  const renderUnitOptions = () => {
+    const isUser = roleLogin === "USER";
+    if (isUser) {
+      return <option value={userUnit}>{userUnit}</option>;
+    }
+    const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
+    if (allowedUnits.length > 0) {
+      return allowedUnits.map((u, idx) => (
+        <option key={idx} value={u}>{u}</option>
+      ));
+    }
+    return (
+      <>
+        <optgroup label="UP3">
+          {Object.keys(ADMIN_UNIT_SCOPE).map((key) => {
+            const up3Name = key.replace("ADMIN ", "");
+            return <option key={up3Name} value={up3Name}>{up3Name}</option>;
+          })}
+        </optgroup>
+        <optgroup label="Unit">
+          {units.map((u, idx) => {
+            const unitStr = String(u).trim();
+            return <option key={idx} value={unitStr}>{unitStr}</option>;
+          })}
+        </optgroup>
+      </>
+    );
+  };
+
+  // ====== RINGKASAN SUDAH / BELUM ======
 const countSummary = useMemo(() => {
   let sudah = 0;
   let belum = 0;
@@ -298,9 +340,14 @@ if (allowedUnits.length) {
 
 // 🔥 filter dropdown unit (SEMUA ROLE)
 if (chartUnitFilter) {
-  sumber = sumber.filter(
-    (r) => String(r[1] || "").trim() === chartUnitFilter
-  );
+  sumber = sumber.filter((r) => {
+    const rUnit = String(r[1] || "").trim();
+    if (chartUnitFilter.startsWith("UP3 ")) {
+      const gUnits = ADMIN_UNIT_SCOPE["ADMIN " + chartUnitFilter] || [];
+      return gUnits.includes(rUnit);
+    }
+    return rUnit === chartUnitFilter;
+  });
 }
 
 
@@ -412,6 +459,42 @@ const merkList = useMemo(() => {
     });
   }
 
+  function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height *= maxWidth / width));
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width *= maxHeight / height));
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
   async function handleSubmitMulti(e) {
     e.preventDefault();
     if (!formRows.length) return;
@@ -429,6 +512,8 @@ const merkList = useMemo(() => {
 
         let fileUrl = row.fileUrl || "";
         let fotoUrl = row.fotoUrl || "";
+        let fotoSegelKiriUrl = row.fotoSegelKiriUrl || "";
+        let fotoSegelKananUrl = row.fotoSegelKananUrl || "";
 
         if (row.file) {
 
@@ -467,6 +552,57 @@ fileUrl = upRes.data?.data || upRes.data || "";
           });
           fotoUrl = upResFoto.data?.data || upResFoto.data || "";
         }
+        
+        // Upload Foto Segel Kiri
+        if (row.fotoSegelKiri) {
+          if (row.fotoSegelKiri.size > 10 * 1024 * 1024) {
+            Swal.fire("File terlalu besar", "Maksimal 10MB untuk Foto Segel Kiri", "warning");
+            setSavingForm(false);
+            return;
+          }
+          let base64DataKiri = "";
+          let mimeTypeKiri = row.fotoSegelKiri.type || "application/octet-stream";
+          if (row.fotoSegelKiri.type.startsWith("image/")) {
+            const compressedBase64 = await compressImage(row.fotoSegelKiri);
+            base64DataKiri = String(compressedBase64).split(",")[1] || compressedBase64;
+            mimeTypeKiri = "image/jpeg";
+          } else {
+            const base64Kiri = await fileToBase64(row.fotoSegelKiri);
+            base64DataKiri = String(base64Kiri).split(",")[1] || base64Kiri;
+          }
+          const upResKiri = await apiPost("uploadFile", {
+            data: base64DataKiri,
+            mimeType: mimeTypeKiri,
+            filename: row.fotoSegelKiri.name,
+          });
+          fotoSegelKiriUrl = upResKiri.data?.data || upResKiri.data || "";
+        }
+
+        // Upload Foto Segel Kanan
+        if (row.fotoSegelKanan) {
+          if (row.fotoSegelKanan.size > 10 * 1024 * 1024) {
+            Swal.fire("File terlalu besar", "Maksimal 10MB untuk Foto Segel Kanan", "warning");
+            setSavingForm(false);
+            return;
+          }
+          let base64DataKanan = "";
+          let mimeTypeKanan = row.fotoSegelKanan.type || "application/octet-stream";
+          if (row.fotoSegelKanan.type.startsWith("image/")) {
+            const compressedBase64 = await compressImage(row.fotoSegelKanan);
+            base64DataKanan = String(compressedBase64).split(",")[1] || compressedBase64;
+            mimeTypeKanan = "image/jpeg";
+          } else {
+            const base64Kanan = await fileToBase64(row.fotoSegelKanan);
+            base64DataKanan = String(base64Kanan).split(",")[1] || base64Kanan;
+          }
+          const upResKanan = await apiPost("uploadFile", {
+            data: base64DataKanan,
+            mimeType: mimeTypeKanan,
+            filename: row.fotoSegelKanan.name,
+          });
+          fotoSegelKananUrl = upResKanan.data?.data || upResKanan.data || "";
+        }
+
         payloadArray.push({
           tanggal: row.tanggal || "",
           unit: roleLogin === "ADMINISTRATOR" ? row.unit || "" : userUnit,
@@ -480,6 +616,8 @@ fileUrl = upRes.data?.data || upRes.data || "";
           sn: row.sn || "",
           fileUrl,
           fotoUrl,
+          fotoSegelKiriUrl,
+          fotoSegelKananUrl,
           peruntukan: row.peruntukan || "",
           status: row.status || "Belum",
           errorMeter: row.errorMeter || "",
@@ -494,6 +632,7 @@ fileUrl = upRes.data?.data || upRes.data || "";
 
       await apiPost("tambahDataPOMulti", { data: payloadArray });
 
+      setShowModalForm(false);
       Swal.fire({
         icon: "success",
         title: "Berhasil!",
@@ -542,79 +681,44 @@ setTimeout(() => {
       file: null,
       fileUrl: row[10] || "",
       fotoUrl: row[14] || "",
+      fotoSegelKiriUrl: row[15] || "",
+      fotoSegelKananUrl: row[16] || "",
       foto: null,
+      fotoSegelKiri: null,
+      fotoSegelKanan: null,
       peruntukan: row[11] || "",
       status: row[12] || "Belum",
       errorMeter: row[13] || "",
-      rowNumber: row[15] || null,
+      rowNumber: row[17] || null,
     };
     setFormRows([obj]);
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    setShowModalForm(true);
   }
 
   // ====== SHOW IMAGE ======
   function handleShowImage(url) {
+    let iframeUrl = url;
+    if (url.includes("drive.google.com")) {
+      const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      const idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+      const id = match ? match[1] : (idMatch ? idMatch[1] : null);
+      if (id) {
+        iframeUrl = `https://drive.google.com/file/d/${id}/preview`;
+      }
+    }
+
     Swal.fire({
-      imageUrl: url,
-      imageAlt: "Foto",
+      html: `<iframe src="${iframeUrl}" style="width:100%; height:75vh; max-height:800px; border:none; border-radius:8px;"></iframe>`,
       showConfirmButton: false,
       showCloseButton: true,
-      width: "80%",
-      padding: "1em",
+      width: "700px",
+      padding: "0.5em",
     });
-  }
-
-  // ====== HAPUS ======
-  async function handleDeleteRow(rowNumber) {
-    if (!rowNumber) return;
-    const res = await Swal.fire({
-      title: "Hapus Data?",
-      text: "Data yang dihapus tidak bisa dikembalikan.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, Hapus",
-      cancelButtonText: "Batal",
-    });
-    if (!res.isConfirmed) return;
-
-    try {
-      await apiPost("hapusDataPO", {
-        rowIndex: Number(rowNumber),
-        roleLogin,
-      });
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil",
-        text: "Data telah dihapus.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      const poRes = await apiPost("getPOData", {
-  unit: loginData.unit,
-  role: loginData.role
-});
-
-const newData = Array.isArray(poRes?.data)
-  ? [...poRes.data].reverse()
-  : [];
-
-// 🔥 paksa refresh
-setAllData([]);
-setTimeout(() => {
-  setAllData(newData);
-}, 100);
-    } catch (err) {
-      Swal.fire("Error", err.message || "Gagal menghapus data", "error");
-    }
   }
 
   // ====== TANDAI SUDAH ======
   async function handleMarkSudah(r) {
-    const rowNumber = r[15];
+    const rowNumber = r[17];
     const sn = String(r[9] || "").trim();
     const fotoUrl = String(r[14] || "").trim();
     
@@ -684,7 +788,10 @@ setTimeout(() => {
       "SN",
       "Error (%)",
       "Peruntukan",
-      "File PK",   
+      "File PK",
+      "Foto KWh",
+      "Foto Segel Kiri",
+      "Foto Segel Kanan",
       "Status",
     ].join(";") + "\n";
     
@@ -705,6 +812,9 @@ setTimeout(() => {
         r[13] || "",
         r[11] || "",
         r[10] || "",
+        r[14] || "",
+        r[15] || "",
+        r[16] || "",
         r[12] || "",
       ].map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`);
       csv += rowArr.join(";") + "\n";
@@ -777,7 +887,14 @@ setTimeout(() => {
         {/* HEADER */}
         {/* HEADER */}
 {/* FORM INPUT MULTI-ROW */}
-        <div className="form-area" id="form-area">
+        {showModalForm && (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <div className="modal-header d-flex justify-content-between align-items-center mb-3">
+          <h5 className="m-0"><i className="bi bi-pencil-square"></i> Input Data</h5>
+          <button type="button" className="btn-close" onClick={() => setShowModalForm(false)}></button>
+        </div>
+        <div className="form-area p-0 shadow-none border-0" id="form-area">
           <h5>
             <i className="bi bi-pencil-square"></i> Input Data
           </h5>
@@ -787,7 +904,7 @@ setTimeout(() => {
               return (
                 <div
                   key={idx}
-                  className="row align-items-end g-2 mb-2"
+                  className="row align-items-end g-3 mb-3 border-bottom pb-3"
                 >
                   <div className="col-md-2">
                     <label>Tanggal</label>
@@ -958,6 +1075,8 @@ setTimeout(() => {
     <label>Upload Foto KWh</label>
     <input
       type="file"
+      accept="image/*"
+      capture="environment"
       className="form-control form-control-sm"
       onChange={(e) =>
         handleFormChange(idx, "foto", e.target.files?.[0] || null)
@@ -966,6 +1085,50 @@ setTimeout(() => {
     {row.fotoUrl && (
       <a
         href={row.fotoUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="small d-block text-info mt-1"
+      >
+        <i className="bi bi-image"></i> Lihat Foto Lama
+      </a>
+    )}
+  </div>
+  <div className="col-md-2">
+    <label>Foto Segel Kiri</label>
+    <input
+      type="file"
+      accept="image/*"
+      capture="environment"
+      className="form-control form-control-sm"
+      onChange={(e) =>
+        handleFormChange(idx, "fotoSegelKiri", e.target.files?.[0] || null)
+      }
+    />
+    {row.fotoSegelKiriUrl && (
+      <a
+        href={row.fotoSegelKiriUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="small d-block text-info mt-1"
+      >
+        <i className="bi bi-image"></i> Lihat Foto Lama
+      </a>
+    )}
+  </div>
+  <div className="col-md-2">
+    <label>Foto Segel Kanan</label>
+    <input
+      type="file"
+      accept="image/*"
+      capture="environment"
+      className="form-control form-control-sm"
+      onChange={(e) =>
+        handleFormChange(idx, "fotoSegelKanan", e.target.files?.[0] || null)
+      }
+    />
+    {row.fotoSegelKananUrl && (
+      <a
+        href={row.fotoSegelKananUrl}
         target="_blank"
         rel="noreferrer"
         className="small d-block text-info mt-1"
@@ -1041,9 +1204,18 @@ setTimeout(() => {
             </div>
           </form>
         </div>
+      </div>
+    </div>
+  )}
 
         {/* FILTER GRAFIK PER UNIT */}
-        <div className="table-area" id="table-area">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="mb-0">Data PO</h5>
+            <button className="btn btn-primary" onClick={() => { setFormRows([createEmptyRow()]); setShowModalForm(true); }}>
+              <i className="bi bi-plus-lg"></i> Tambah Data
+            </button>
+          </div>
+          <div className="table-area" id="table-area">
           <div className="card p-2 mb-3" style={{ maxWidth: 300 }}>
             <label className="form-label mb-1" style={{ fontSize: 13 }}>
               Filter Grafik per Unit:
@@ -1056,19 +1228,7 @@ setTimeout(() => {
 >
   <option value="">-- Semua Unit --</option>
 
-  {(() => {
-    const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
-
-    const showUnits = allowedUnits.length
-      ? units.filter(u =>
-  allowedUnits.includes(String(u).trim().replace(/\s/g, ""))
-)
-      : units;
-
-    return showUnits.map((u) => (
-      <option key={u} value={u}>{u}</option>
-    ));
-  })()}
+  {renderUnitOptions()}
 </select>
           </div>
 
@@ -1237,19 +1397,7 @@ setTimeout(() => {
                 disabled={roleLogin !== "ADMINISTRATOR"}
               >
                 <option value="">-- Semua Unit --</option>
-                {(() => {
-  const allowedUnits = ADMIN_UNIT_SCOPE[namaUser] || [];
-
-  const showUnits = allowedUnits.length
-    ? units.filter(u =>
-  allowedUnits.includes(String(u).trim().replace(/\s/g, ""))
-)
-    : units;
-
-  return showUnits.map((u) => (
-    <option key={u} value={u}>{u}</option>
-  ));
-})()}
+                {renderUnitOptions()}
               </select>
             </div>
             <div className="col-md-2">
@@ -1284,7 +1432,7 @@ setTimeout(() => {
 
           {/* TABEL DATA */}
           <div className="table-responsive" style={{ maxHeight: "500px", overflowY: "auto", overflowX: "auto" }}>
-            <table className="table table-bordered table-striped mb-0 table-hover align-middle" style={{ whiteSpace: "nowrap" }}>
+            <table className="table table-bordered mb-0 align-middle shadow-sm" style={{ whiteSpace: "nowrap", "--bs-table-border-color": "#9ca3af" }}>
               <thead style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "#fff" }}>
                 <tr>
                   <th>No</th>
@@ -1302,6 +1450,8 @@ setTimeout(() => {
                   <th>Peruntukan</th>
                   <th>File PK</th>
                   <th>Foto KWh</th>
+                  <th>Foto Segel Kiri</th>
+                  <th>Foto Segel Kanan</th>
                   <th>Status</th>
                   <th>Aksi</th>
                 </tr>
@@ -1309,13 +1459,13 @@ setTimeout(() => {
               <tbody>
                 {loadingData ? (
                   <tr>
-                    <td colSpan={15} className="text-center">
+                    <td colSpan={17} className="text-center">
                       Memuat data...
                     </td>
                   </tr>
                 ) : filteredTableData.length === 0 ? (
                   <tr>
-                    <td colSpan={15} className="text-center">
+                    <td colSpan={17} className="text-center">
                       Tidak ada data
                     </td>
                   </tr>
@@ -1323,16 +1473,33 @@ setTimeout(() => {
                   filteredTableData.map((r, idx) => {
                     const fileUrl = r[10];
                     const status = String(r[12] || "").trim();
-                    const rowNumber = r[15];
-                    const badge =
-                      status === "Sudah" ? (
-                        <span className="badge bg-success">Sudah</span>
+                    const rowNumber = r[17];
+                    
+                    const isSudah = status === "Sudah";
+                    const rowBgColor = isSudah ? "#f0f8ff" : "#fff0f0"; // soft alice blue : soft blush pink
+                    
+                    const badge = isSudah ? (
+                        <span className="badge" style={{ backgroundColor: "#0dcaf0", color: "#000" }}>Sudah</span>
                       ) : (
-                        <span className="badge bg-secondary">Belum</span>
+                        <span className="badge" style={{ backgroundColor: "#dc3545", color: "#fff" }}>Belum</span>
                       );
 
                     return (
-                      <tr key={idx}>
+                      <tr 
+                        key={idx}
+                        onClick={(e) => {
+                          const isLinkOrBtn = e.target.tagName.toLowerCase() === 'a' || e.target.closest('a') || e.target.tagName.toLowerCase() === 'button' || e.target.closest('button');
+                          if (!isLinkOrBtn && roleLogin === "ADMINISTRATOR") {
+                            handleEditRow(r);
+                          }
+                        }}
+                        style={{ 
+                          cursor: roleLogin === "ADMINISTRATOR" ? "pointer" : "default",
+                          "--bs-table-bg": rowBgColor,
+                          "--bs-table-accent-bg": "transparent"
+                        }}
+                        className={roleLogin === "ADMINISTRATOR" ? "table-row-hover" : ""}
+                      >
                         <td>{idx + 1}</td>
                         <td>{r[0]}</td>
                         <td>{r[1]}</td>
@@ -1358,26 +1525,39 @@ setTimeout(() => {
   <a href="#!" onClick={(e) => { e.preventDefault(); handleShowImage(r[14]); }} className="text-primary text-decoration-underline" style={{ cursor: "pointer" }}>Lihat</a>
 ) : ("-")}
 </td>
+<td>
+{typeof r[15] === "string" && r[15].startsWith("http") ? (
+  <a href="#!" onClick={(e) => { e.preventDefault(); handleShowImage(r[15]); }} className="text-primary text-decoration-underline" style={{ cursor: "pointer" }}>Lihat</a>
+) : ("-")}
+</td>
+<td>
+{typeof r[16] === "string" && r[16].startsWith("http") ? (
+  <a href="#!" onClick={(e) => { e.preventDefault(); handleShowImage(r[16]); }} className="text-primary text-decoration-underline" style={{ cursor: "pointer" }}>Lihat</a>
+) : ("-")}
+</td>
                       <td>{badge}</td>            {/* Status */}
                         <td>
                           {roleLogin === "ADMINISTRATOR" ? (
                             <div className="d-flex flex-row gap-1 justify-content-center">
                               <button
-                                className="btn btn-sm btn-outline-primary"
+                                className="btn btn-sm btn-primary text-white border-0 shadow-sm"
                                 onClick={() => handleEditRow(r)}
+                                title="Edit Data"
                               >
                                 <i className="bi bi-pencil"></i>
                               </button>
                               <button
-                                className="btn btn-sm btn-outline-danger"
+                                className="btn btn-sm btn-danger text-white border-0 shadow-sm"
                                 onClick={() => handleDeleteRow(rowNumber)}
+                                title="Hapus Data"
                               >
                                 <i className="bi bi-trash"></i>
                               </button>
                               {status !== "Sudah" && (
                                 <button
-                                  className="btn btn-sm btn-outline-warning text-dark"
+                                  className="btn btn-sm btn-warning text-dark border-0 shadow-sm"
                                   onClick={() => handleMarkSudah(r)}
+                                  title="Tandai Sudah Selesai"
                                 >
                                   <i className="bi bi-check-lg"></i>
                                 </button>
@@ -1420,6 +1600,27 @@ setTimeout(() => {
   justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  padding: 20px;
+}
+.modal-container {
+  background: white;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .form-area,
@@ -1478,10 +1679,22 @@ setTimeout(() => {
   }
 
   /* Semua field form jadi 1 kolom */
-  .row.align-items-end.g-2.mb-2 > div {
+  /* Update modal di HP */
+  .modal-overlay {
+    padding: 10px;
+  }
+  .modal-container {
+    padding: 15px;
+    max-height: 95vh;
+  }
+  .row.align-items-end.g-3.mb-3 > div {
     flex: 0 0 100%;
     max-width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+  }
+  .table-area {
+    padding: 10px !important;
+    overflow-x: auto;
   }
 
   /* ===== CHART ===== */
@@ -1627,6 +1840,13 @@ setTimeout(() => {
   }
 }
 
+.table-row-hover:hover {
+  box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.075);
+}
+
+.table-bordered td, .table-bordered th {
+  border: 1px solid #aab7c4 !important;
+}
 `}</style>
 
 
