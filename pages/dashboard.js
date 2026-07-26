@@ -48,6 +48,13 @@ export default function DashboardPage() {
   // ====== STATE UTAMA ======
   const [loginData, setLoginData] = useState(null);
   const [clock, setClock] = useState("");
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.Capacitor?.isNativePlatform()) {
+      setIsNative(true);
+    }
+  }, []);
 
   const [allData, setAllData] = useState([]);
   const [units, setUnits] = useState([]);
@@ -1144,13 +1151,22 @@ setTimeout(() => {
 
   <div className="col-md-2">
     <label>Upload Foto KWh</label>
-    <button
-      type="button"
-      className="btn btn-sm btn-outline-primary w-100 mt-1"
-      onClick={() => handleFotoUpload(idx, "foto")}
-    >
-      📸 Buka Kamera / Galeri
-    </button>
+    {isNative ? (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-primary w-100 mt-1"
+        onClick={() => handleFotoUpload(idx, "foto")}
+      >
+        📸 Buka Kamera / Galeri
+      </button>
+    ) : (
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control form-control-sm mt-1"
+        onChange={(e) => handleFormChange(idx, "foto", e.target.files?.[0] || null)}
+      />
+    )}
     {row.foto && (
       <span className="small text-success d-block mt-1 fw-bold">
         ✔ {row.foto.name || "Foto Siap"}
@@ -1169,13 +1185,22 @@ setTimeout(() => {
   </div>
   <div className="col-md-2">
     <label>Foto Segel Kiri</label>
-    <button
-      type="button"
-      className="btn btn-sm btn-outline-primary w-100 mt-1"
-      onClick={() => handleFotoUpload(idx, "fotoSegelKiri")}
-    >
-      📸 Buka Kamera / Galeri
-    </button>
+    {isNative ? (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-primary w-100 mt-1"
+        onClick={() => handleFotoUpload(idx, "fotoSegelKiri")}
+      >
+        📸 Buka Kamera / Galeri
+      </button>
+    ) : (
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control form-control-sm mt-1"
+        onChange={(e) => handleFormChange(idx, "fotoSegelKiri", e.target.files?.[0] || null)}
+      />
+    )}
     {row.fotoSegelKiri && (
       <span className="small text-success d-block mt-1 fw-bold">
         ✔ {row.fotoSegelKiri.name || "Foto Siap"}
@@ -1194,13 +1219,22 @@ setTimeout(() => {
   </div>
   <div className="col-md-2">
     <label>Foto Segel Kanan</label>
-    <button
-      type="button"
-      className="btn btn-sm btn-outline-primary w-100 mt-1"
-      onClick={() => handleFotoUpload(idx, "fotoSegelKanan")}
-    >
-      📸 Buka Kamera / Galeri
-    </button>
+    {isNative ? (
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-primary w-100 mt-1"
+        onClick={() => handleFotoUpload(idx, "fotoSegelKanan")}
+      >
+        📸 Buka Kamera / Galeri
+      </button>
+    ) : (
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control form-control-sm mt-1"
+        onChange={(e) => handleFormChange(idx, "fotoSegelKanan", e.target.files?.[0] || null)}
+      />
+    )}
     {row.fotoSegelKanan && (
       <span className="small text-success d-block mt-1 fw-bold">
         ✔ {row.fotoSegelKanan.name || "Foto Siap"}
