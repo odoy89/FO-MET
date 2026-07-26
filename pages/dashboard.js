@@ -429,6 +429,19 @@ const merkList = useMemo(() => {
 
 
   async function handleFotoUpload(idx, field) {
+    if (typeof window !== "undefined" && !Capacitor.isNativePlatform()) {
+      return new Promise((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = (e) => {
+          handleFormChange(idx, field, e.target.files?.[0] || null);
+          resolve();
+        };
+        input.click();
+      });
+    }
+
     try {
       const result = await Swal.fire({
         title: "Pilih Sumber Foto",
